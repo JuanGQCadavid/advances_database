@@ -63,24 +63,21 @@ func (tree *BTree) Insert(node *Node, data *Data) {
 
 		if len(node.Ids) >= tree.UpperLimit {
 			log.Println("We are creating new children")
-			left, middle, right := node.Ids[0:tree.UpperLimit/2], node.Ids[tree.UpperLimit/2], node.Ids[(tree.UpperLimit/2)+1:]
-			nodeLeft := Node{
-				Ids: left,
-			}
-			nodeRight := Node{
-				Ids: right,
-			}
+			midIndex := len(node.Ids) / 2
+			midData := node.Ids[midIndex]
+			left := &Node{Ids: append([]*Data{}, node.Ids[:midIndex]...)}
+			right := &Node{Ids: append([]*Data{}, node.Ids[midIndex+1:]...)}
 
 			if node.Parent == nil {
 				newRoot := Node{
-					Ids: []*Data{middle},
+					Ids: []*Data{midData},
 				}
 				newRoot.Children = make([]*Node, 0)
-				newRoot.Children = append(newRoot.Children, &nodeLeft)
-				newRoot.Children = append(newRoot.Children, &nodeRight)
+				newRoot.Children = append(newRoot.Children, left)
+				newRoot.Children = append(newRoot.Children, right)
 
-				nodeLeft.Parent = &newRoot
-				nodeRight.Parent = &newRoot
+				left.Parent = &newRoot
+				right.Parent = &newRoot
 
 				tree.Root = &newRoot
 			}
