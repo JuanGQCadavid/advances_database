@@ -1,12 +1,8 @@
-package main
+package core
 
 import (
 	"log"
 	"sort"
-)
-
-var (
-	DB []*Student
 )
 
 type BTree struct {
@@ -24,14 +20,6 @@ type Node struct {
 type Data struct {
 	Id       int
 	Position int
-}
-
-type Student struct {
-	Number int
-	Name   string
-	Gender string
-	Age    float64
-	City   string
 }
 
 func (tree *BTree) BalanceTree(node *Node, data *Data) {
@@ -104,6 +92,26 @@ func (tree *BTree) BalanceTree(node *Node, data *Data) {
 
 }
 
+func (tree *BTree) Search(node *Node, id int) *Data {
+
+	lastPoint := -1
+	for pos, ids := range node.Ids {
+		if ids.Id == id {
+			return ids
+		}
+		if id < ids.Id {
+			lastPoint = pos
+		}
+	}
+
+	if lastPoint == -1 || len(node.Children) == 0 {
+		return nil
+	}
+
+	return tree.Search(node.Children[lastPoint+1], id)
+
+}
+
 func (tree *BTree) Insert(node *Node, data *Data) {
 	// we are missing
 	// to saturate a leaf until it needs to go to the upper level an insert there if the upper level is not the root
@@ -159,8 +167,4 @@ func NewBTree(order int) *BTree {
 		UpperLimit: order,
 		LowerLimit: order / 2,
 	}
-}
-
-func main() {
-
 }
