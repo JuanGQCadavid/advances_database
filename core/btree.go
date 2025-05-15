@@ -1,7 +1,6 @@
 package core
 
 import (
-	"log"
 	"sort"
 )
 
@@ -42,7 +41,7 @@ func (tree *BTree) BalanceTree(node *Node, data *Data) {
 
 	// Lets balance the pointers if we are in a mid node
 
-	if node.Children != nil {
+	if len(node.Children) > 0 {
 		// left.Children = node.Children[:midIndex+1]
 		node.Children = node.Children[:midIndex+1]
 		right.Children = node.Children[midIndex+1:]
@@ -50,7 +49,7 @@ func (tree *BTree) BalanceTree(node *Node, data *Data) {
 
 	// We are on the root, easy case
 	if node.Parent == nil {
-		log.Println("New root")
+		// log.Println("New root")
 		newRoot := &Node{
 			Ids: []*Data{midData},
 			Children: []*Node{
@@ -86,31 +85,53 @@ func (tree *BTree) BalanceTree(node *Node, data *Data) {
 		parent.Children = append(parent.Children[:insertIndex+1], append([]*Node{right}, parent.Children[insertIndex+1:]...)...)
 		right.Parent = parent
 
-		log.Println("Parent is full, relabalncing is needed")
+		// log.Println("Parent is full, relabalncing is needed")
 		tree.BalanceTree(parent, midData)
 	}
 
 }
 
 func (tree *BTree) Search(node *Node, id int) *Data {
-
-	lastPoint := -1
-	for pos, ids := range node.Ids {
-		if ids.Id == id {
-			return ids
+	// Search current node
+	for i, data := range node.Ids {
+		if data.Id == id {
+			return data
 		}
-		if id < ids.Id {
-			lastPoint = pos
+		if id < data.Id {
+			// Recurse on left child of this key
+			if len(node.Children) == 0 {
+				return nil
+			}
+			return tree.Search(node.Children[i], id)
 		}
 	}
 
-	if lastPoint == -1 || len(node.Children) == 0 {
+	// If not found and greater than all keys, recurse to the rightmost child
+	if len(node.Children) == 0 {
 		return nil
 	}
-
-	return tree.Search(node.Children[lastPoint+1], id)
-
+	return tree.Search(node.Children[len(node.Children)-1], id)
 }
+
+// func (tree *BTree) Search(node *Node, id int) *Data {
+
+// 	lastPoint := -1
+// 	for pos, ids := range node.Ids {
+// 		if ids.Id == id {
+// 			return ids
+// 		}
+// 		if id < ids.Id {
+// 			lastPoint = pos
+// 		}
+// 	}
+
+// 	if lastPoint == -1 || len(node.Children) == 0 {
+// 		return nil
+// 	}
+
+// 	return tree.Search(node.Children[lastPoint+1], id)
+
+// }
 
 func (tree *BTree) Insert(node *Node, data *Data) {
 	// we are missing
@@ -120,7 +141,7 @@ func (tree *BTree) Insert(node *Node, data *Data) {
 
 	// If there is not root, first data inserted
 	if node == nil {
-		log.Println("We are creating a new root")
+		// log.Println("We are creating a new root")
 		newNode := Node{
 			Ids: make([]*Data, 0),
 		}
@@ -131,7 +152,7 @@ func (tree *BTree) Insert(node *Node, data *Data) {
 
 	// I dont have children, Yuju!
 	if len(node.Children) <= 0 {
-		log.Println("Inserting on leaf")
+		// log.Println("Inserting on leaf")
 
 		if len(node.Ids) < tree.UpperLimit {
 			// There where space!
@@ -149,7 +170,7 @@ func (tree *BTree) Insert(node *Node, data *Data) {
 	}
 
 	// Shit, I have children
-	log.Println("Looking for a sibling")
+	// log.Println("Looking for a sibling")
 	pointer := len(node.Ids)
 	for i, nodeData := range node.Ids {
 		if data.Id < nodeData.Id {
